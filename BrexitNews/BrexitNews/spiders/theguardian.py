@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-from urllib import parse
 
 import scrapy
 from scrapy import Request
 
-from ..items import BrexitNewsItem
+from BrexitNews.items import BrexitNewsItem
 
 start_date = datetime.date(2016, 6, 16)
 end_date = datetime.date(2016, 6, 22)
@@ -40,15 +39,17 @@ class TheguardianSpider(scrapy.Spider):
 
     def article(self, response):
         brexit_news = BrexitNewsItem()
-        title = response.xpath('//h1[@class="content__headline "]/text()').extract_first().replace('\n', '')
+        title = response.xpath('//h1[contains(@class,"content__headline")]/text()').extract_first().replace('\n', '')
         brexit_news['title'] = title
         text = ''
-        for sel in response.xpath('//div[@class="content__article-body from-content-api js-article__body"]//p'):
-            text += sel.xpath('text()').extract_first() + '\n'
+        # for sel in response.xpath('//div[contains(@class,"content__article-body")]//p'):
+        for sel in response.xpath('//p'):
+            text += sel.xpath('text()').extract_first() + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
         brexit_news['media'] = 'theguardian'
-        print(text)
+        brexit_news['date'] = response.xpath('//time[contains(@itemprop,"datePublished")]/@datetime').extract_first()[:10]
+        # print(text)
         yield brexit_news
 
 
