@@ -44,7 +44,9 @@ class TheguardianSpider(scrapy.Spider):
         text = ''
         # for sel in response.xpath('//div[contains(@class,"content__article-body")]//p'):
         for sel in response.xpath('//p'):
-            text += sel.xpath('text()').extract_first() + '\n\n'
+            line = sel.xpath('text()').extract_first()
+            if line is not None:
+                text += line + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
         brexit_news['media'] = 'theguardian'
