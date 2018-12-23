@@ -90,12 +90,13 @@ def predict(vectorizer_model, svm_model):
     clf = joblib.load(svm_model)
     report = classification_report(clf.predict(corpus_test), y_test)
     print(report)
+    print(clf.score(corpus_test, y_test))
     return
 
 
 if __name__ == '__main__':
     corpus, target = get_corpus('./news')
-    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.85)
+    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.2)
     x_corpus_vector = vectorize('./models/tfidf_train')
     svm_build('./models/svm_train')
     predict('./models/tfidf_train', './models/svm_train')
