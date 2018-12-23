@@ -10,8 +10,6 @@ if __name__ == '__main__':
     # x = iris.data
     # y = iris.target
     (x, y) = datasets.make_circles(n_samples=300, factor=0.5, noise=0.1)
-    y = ['first' if e == 1 else 'second' for e in y]
-    print(y)
     # print(x)
     # print(y)
 

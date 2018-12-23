@@ -88,3 +88,7 @@ DOWNLOAD_DELAY = 2
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+ITEM_PIPELINES = {
+   'BrexitNews.pipelines.BrexitnewsPipeline': 1,
+}
