@@ -7,7 +7,7 @@ from scrapy import Request
 from BrexitNews.items import BrexitNewsItem
 
 start_date = datetime.date(2016, 6, 16)
-end_date = datetime.date(2016, 6, 22)
+end_date = datetime.date(2016, 6, 24)
 month_of_year = ['January', 'February', 'March', 'April', 'May', 'June',
                  'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -35,16 +35,16 @@ class TheguardianSpider(scrapy.Spider):
 
     name = 'inews'
     allowed_domains = ['inews.co.uk']
-    start_urls = ['https://inews.co.uk/news/uk/page/789/']
+    start_urls = ['https://inews.co.uk/news/uk/page/788/']
 
 
     def article(self, response):
         brexit_news = BrexitNewsItem()
-        title = response.xpath('//h1[contains(@class,"entry-title")]/text()').extract_first().replace('\n', '')
+        title = response.xpath('string(//h1[contains(@class,"entry-title")])').extract_first().replace('\n', '')
         brexit_news['title'] = title
         text = ''
         for sel in response.xpath('//div[contains(@itemprop,"articleBody")]//p'):
-            line = sel.xpath('text()').extract_first()
+            line = sel.xpath('string(.)').extract_first()
             if line is not None:
                 text += line + '\n\n'
         brexit_news['text'] = text
