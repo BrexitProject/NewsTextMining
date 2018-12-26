@@ -45,7 +45,7 @@ def get_corpus(folder):
         files = article_dict[tag]
         for file in files:
             # some file may encode by iso-8859-1
-            f = open(os.path.join(folder, tag, file), 'r', encoding='iso-8859-1')
+            f = open(os.path.join(folder, tag, file), 'r', encoding='utf-8')
             text = f.read()
             corpus.append(text_preprocess(text))
             target.append(tag)
@@ -72,11 +72,12 @@ def svm_build(save_path):
         'gamma': [0.125, 0.25, 0.5, 1, 2, 4]
     }
     clf = GridSearchCV(svm.SVC(), tuned_parameters, cv=3)
-    clf.fit(x_corpus_vector, y_train)
+    vectorizer = TfidfVectorizer(analyzer='word', stop_words='english', norm='l2')
+    clf.fit(vectorizer.fit_transform(corpus), target)
     print(clf.best_estimator_)
 
     # build & train svm model (should adjust parameter C and gamma)
-    svc = svm.SVC(C=1, kernel='linear', gamma='auto').fit(x_corpus_vector, y_train)
+    svc = svm.SVC(C=4, kernel='linear', gamma='auto').fit(x_corpus_vector, y_train)
 
     # save model
     joblib.dump(svc, save_path)
@@ -95,7 +96,7 @@ def predict(vectorizer_model, svm_model):
 
 
 if __name__ == '__main__':
-    corpus, target = get_corpus('./news')
+    corpus, target = get_corpus('./LabelledNews')
     (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.2)
     x_corpus_vector = vectorize('./models/tfidf_train')
     svm_build('./models/svm_train')
