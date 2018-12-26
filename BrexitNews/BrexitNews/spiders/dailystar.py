@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-import re
 
 import scrapy
 from scrapy import Request
@@ -34,27 +33,26 @@ def check_url(url):
 
 class TheguardianSpider(scrapy.Spider):
 
-    name = 'thesun'
-    allowed_domains = ['thesun.co.uk']
-    start_urls = ['https://www.thesun.co.uk/page/360/?s=eu+Referendum']
+    name = 'dailystar'
+    allowed_domains = ['dailystar.co.uk']
+    base_url = 'https://www.dailystar.co.uk/search?q=brexit&section=131&o='
+    page = 3150
+    start_urls = ['https://www.dailystar.co.uk/search?q=brexit&section=131&o=' + str(page)]
 
 
     def article(self, response):
         brexit_news = BrexitNewsItem()
-        title = response.xpath('string(//h1[contains(@class,"article__headline")])').extract_first().replace('\n', '')
+        title = response.xpath('string(//h1[contains(@itemprop,"headline")])').extract_first().strip()
         brexit_news['title'] = title
         text = ''
-        for sel in response.xpath('//div[contains(@class,"article__content")]//p'):
+        for sel in response.xpath('//div[contains(@data-type,"article-body")]//p'):
             line = sel.xpath('string(.)').extract_first()
             if line is not None:
                 text += line + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
-        brexit_news['media'] = 'thesun'
-        date = response.xpath('string(//div[contains(@class,"article__published")]/span[1])').extract_first()
-        date = date.replace(',', '').split()
-        date = date[2] + '-' + str(month_of_year.index(date[1]) + 1) + '-' + re.sub('\D', '', date[0])
-        brexit_news['date'] = date
+        brexit_news['media'] = 'dailystar'
+        brexit_news['date'] = response.xpath('//time[@datetime]/@datetime').extract_first()[:10]
         # print(brexit_news)
         if check_date(brexit_news['date']):
             yield brexit_news
@@ -62,13 +60,13 @@ class TheguardianSpider(scrapy.Spider):
 
     def parse(self, response):
 
-        for sel in response.xpath('//a[contains(@class,"teaser-anchor")]'):
+        for sel in response.xpath('//a[contains(@class,"result-item")]'):
             article_url = sel.xpath('@href').extract_first()
             if check_url(article_url):
                 yield Request(article_url, self.article)
 
         # handle every page
-        next_page_url = response.xpath('//a[contains(@class,"pagination-next")]/@href').extract_first()
-        if check_url(next_page_url):
-            if int(next_page_url.split('/')[-2]) <= 380:
-                yield Request(next_page_url, self.parse)
+        self.page += 10
+        next_page_url = self.base_url + str(self.page)
+        if self.page <= 3260:
+            yield Request(next_page_url, self.parse)
