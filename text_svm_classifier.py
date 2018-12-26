@@ -97,7 +97,7 @@ def predict(vectorizer_model, svm_model):
 
 if __name__ == '__main__':
     corpus, target = get_corpus('./LabelledNews')
-    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.01)
+    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.2)
     x_corpus_vector = vectorize('./models/tfidf_train')
     svm_build('./models/svm_train')
     predict('./models/tfidf_train', './models/svm_train')
