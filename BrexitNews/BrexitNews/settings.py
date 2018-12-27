@@ -94,3 +94,11 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 ITEM_PIPELINES = {
    'BrexitNews.pipelines.BrexitnewsPipeline': 1,
 }
+
+# DOWNLOADER_MIDDLEWARES = {
+#     'BrexitNews.middlewares.ProxyMiddleware': 543,
+# }
+#
+# IP_POOL = [
+#
+# ]

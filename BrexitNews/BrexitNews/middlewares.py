@@ -4,8 +4,12 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import random
+import time
 
 from scrapy import signals
+
+from BrexitNews.settings import IP_POOL
 
 
 class BrexitnewsSpiderMiddleware(object):
@@ -101,3 +105,13 @@ class BrexitnewsDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ProxyMiddleware(object):
+
+    def process_request(self, request, spider):
+        proxy = random.choice(IP_POOL)
+        local_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        print(local_time + ' <Request: \'' + request.url + '\'>, Proxy: ' + proxy['ipaddr'])
+        request.meta['proxy'] = 'http://' + proxy['ipaddr']
+        return None

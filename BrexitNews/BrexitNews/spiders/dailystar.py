@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from urllib import parse
 
 import scrapy
 from scrapy import Request
@@ -35,9 +36,7 @@ class TheguardianSpider(scrapy.Spider):
 
     name = 'dailystar'
     allowed_domains = ['dailystar.co.uk']
-    base_url = 'https://www.dailystar.co.uk/search?q=brexit&section=131&o='
-    page = 3150
-    start_urls = ['https://www.dailystar.co.uk/search?q=brexit&section=131&o=' + str(page)]
+    start_urls = ['https://www.dailystar.co.uk/search?q=brexit&section=131&o=3140']
 
 
     def article(self, response):
@@ -48,10 +47,10 @@ class TheguardianSpider(scrapy.Spider):
         for sel in response.xpath('//div[contains(@data-type,"article-body")]//p'):
             line = sel.xpath('string(.)').extract_first()
             if line is not None:
-                text += line + '\n\n'
+                text += line.strip() + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
-        brexit_news['media'] = 'dailystar'
+        brexit_news['media'] = self.name
         brexit_news['date'] = response.xpath('//time[@datetime]/@datetime').extract_first()[:10]
         # print(brexit_news)
         if check_date(brexit_news['date']):
@@ -60,13 +59,16 @@ class TheguardianSpider(scrapy.Spider):
 
     def parse(self, response):
 
+        date = response.xpath('//time/@datetime')[-1].extract()[:10]
+        if not check_date(date):
+            return
+
         for sel in response.xpath('//a[contains(@class,"result-item")]'):
             article_url = sel.xpath('@href').extract_first()
             if check_url(article_url):
                 yield Request(article_url, self.article)
 
         # handle every page
-        self.page += 10
-        next_page_url = self.base_url + str(self.page)
-        if self.page <= 3260:
+        next_page_url = parse.urljoin(response.url, response.xpath('//a[@id="loadMore"]/@href').extract_first())
+        if check_url(next_page_url):
             yield Request(next_page_url, self.parse)

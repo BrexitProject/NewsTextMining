@@ -77,7 +77,7 @@ def svm_build(save_path):
     print(clf.best_estimator_)
 
     # build & train svm model (should adjust parameter C and gamma)
-    svc = svm.SVC(C=4, kernel='linear', gamma='auto').fit(x_corpus_vector, y_train)
+    svc = svm.SVC(C=8, kernel='linear', gamma='auto').fit(x_corpus_vector, y_train)
 
     # save model
     joblib.dump(svc, save_path)

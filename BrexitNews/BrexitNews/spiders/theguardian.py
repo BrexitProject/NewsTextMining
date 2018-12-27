@@ -7,7 +7,7 @@ from scrapy import Request
 from BrexitNews.items import BrexitNewsItem
 
 start_date = datetime.date(2016, 6, 16)
-end_date = datetime.date(2016, 6, 22)
+end_date = datetime.date(2016, 6, 24)
 month_of_year = ['January', 'February', 'March', 'April', 'May', 'June',
                  'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -39,17 +39,16 @@ class TheguardianSpider(scrapy.Spider):
 
     def article(self, response):
         brexit_news = BrexitNewsItem()
-        title = response.xpath('//h1[contains(@class,"content__headline")]/text()').extract_first().replace('\n', '')
+        title = response.xpath('string(//h1[contains(@class,"content__headline")])').extract_first().strip()
         brexit_news['title'] = title
         text = ''
-        # for sel in response.xpath('//div[contains(@class,"content__article-body")]//p'):
-        for sel in response.xpath('//p'):
-            line = sel.xpath('text()').extract_first()
+        for sel in response.xpath('//div[contains(@itemprop,"articleBody")]//p'):
+            line = sel.xpath('string(.)').extract_first()
             if line is not None:
-                text += line + '\n\n'
+                text += line.strip() + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
-        brexit_news['media'] = 'theguardian'
+        brexit_news['media'] = self.name
         brexit_news['date'] = response.xpath('//time[contains(@itemprop,"datePublished")]/@datetime').extract_first()[:10]
         # print(text)
         yield brexit_news
@@ -60,12 +59,12 @@ class TheguardianSpider(scrapy.Spider):
         if not check_date(response):
             return
 
-        for sel in response.xpath('//*[@id="top"]/div[4]/div/section/div/div[2]/div[@class="fc-slice-wrapper"]//a[@aria-hidden="true"]'):
+        for sel in response.xpath('//a[@class="fc-item__link"]'):
             article_url = sel.xpath('@href').extract_first()
             if 'video' not in article_url:
                 yield Request(article_url, self.article)
 
         # handle every page
-        next_page_url = response.xpath('//*[@id="top"]/div[4]/div/section/div/div[2]/div[last()]/a[last()]/@href').extract_first()
+        next_page_url = response.xpath('//a[@rel="next"]/@href').extract_first()
         if check_url(next_page_url):
             yield Request(next_page_url, self.parse)
