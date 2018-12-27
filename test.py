@@ -50,7 +50,7 @@ def read(folder):
 
 if __name__ == '__main__':
     tfidf = joblib.load('./models/tfidf_train')
-    corpus_test = tfidf.transform(read('./spider_news/mirror'))
+    corpus_test = tfidf.transform(read('./spider_news/ft'))
     clf = joblib.load('./models/svm_train')
 
     result = clf.predict(corpus_test)
