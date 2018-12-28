@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import re
 
 import scrapy
 from scrapy import Request
@@ -35,21 +36,21 @@ class TheguardianSpider(scrapy.Spider):
 
     name = 'inews'
     allowed_domains = ['inews.co.uk']
-    start_urls = ['https://inews.co.uk/news/uk/page/788/']
+    start_urls = ['https://inews.co.uk/page/662/?s=brexit']
 
 
     def article(self, response):
         brexit_news = BrexitNewsItem()
-        title = response.xpath('string(//h1[contains(@class,"entry-title")])').extract_first().replace('\n', '')
+        title = response.xpath('string(//h1[contains(@class,"entry-title")])').extract_first().strip()
         brexit_news['title'] = title
         text = ''
         for sel in response.xpath('//div[contains(@itemprop,"articleBody")]//p'):
             line = sel.xpath('string(.)').extract_first()
             if line is not None:
-                text += line + '\n\n'
+                text += line.strip() + '\n\n'
         brexit_news['text'] = text
         brexit_news['url'] = response.url
-        brexit_news['media'] = 'inews'
+        brexit_news['media'] = self.name
         brexit_news['date'] = response.xpath('//time[contains(@itemprop,"datePublished")]/@datetime').extract_first()[:10]
         # print(brexit_news)
         if check_date(brexit_news['date']):
@@ -58,7 +59,13 @@ class TheguardianSpider(scrapy.Spider):
 
     def parse(self, response):
 
-        for sel in response.xpath('//a[contains(@class,"teaser-lead__link-primary")]'):
+        date = response.xpath('//span[@class="teaser-topic__pubdate"]/text()')[-1].extract()
+        date = date.strip().split()
+        date = date[2] + '-' + str(month_of_year.index(date[0]) + 1) + '-' + re.sub('\D', '', date[1])
+        if not check_date(date):
+            return
+
+        for sel in response.xpath('//a[contains(@class,"teaser-topic__link-primary")]'):
             article_url = sel.xpath('@href').extract_first()
             if check_url(article_url):
                 yield Request(article_url, self.article)
@@ -66,5 +73,4 @@ class TheguardianSpider(scrapy.Spider):
         # handle every page
         next_page_url = response.xpath('//a[@class="next page-numbers"]/@href').extract_first()
         if check_url(next_page_url):
-            if int(next_page_url.split('/')[-2]) < 795:
-                yield Request(next_page_url, self.parse)
+            yield Request(next_page_url, self.parse)
