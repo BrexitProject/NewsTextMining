@@ -50,12 +50,12 @@ def read(folder):
 
 if __name__ == '__main__':
     tfidf = joblib.load('./models/tfidf_train')
-    corpus_test = tfidf.transform(read('./spider_news/mirror'))
+    corpus_test = tfidf.transform(read('./spider_news/thesun'))
     clf = joblib.load('./models/svm_train')
 
     result = clf.predict(corpus_test)
-    leave_count = np.sum(result == 'Leave')
-    remain_count = np.sum(result == 'Remain')
+    leave_count = np.sum(result == 'leave')
+    remain_count = np.sum(result == 'remain')
 
     print('Leave: %d (%.2f%%)' % (leave_count, leave_count / result.size * 100))
     print('Remain: %d (%.2f%%)' % (remain_count, remain_count / result.size * 100))
