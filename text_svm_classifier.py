@@ -11,7 +11,7 @@ import re
 from nltk.corpus import stopwords
 from sklearn import svm
 from sklearn.externals import joblib
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV, train_test_split
 
@@ -56,7 +56,7 @@ def get_corpus(folder):
 
 
 def vectorize(save_path):
-    tfidf_vectorizer = TfidfVectorizer(analyzer='word', stop_words='english')
+    tfidf_vectorizer = TfidfVectorizer(analyzer='word', stop_words='english', norm='l2')
     corpus_train = tfidf_vectorizer.fit_transform(x_train)
     joblib.dump(tfidf_vectorizer, save_path)
     # print(corpus_train)
@@ -97,7 +97,7 @@ def predict(vectorizer_model, svm_model):
 
 if __name__ == '__main__':
     corpus, target = get_corpus('./LabelledNews')
-    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.2)
+    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.01)
     x_corpus_vector = vectorize('./models/tfidf_train')
     svm_build('./models/svm_train')
     predict('./models/tfidf_train', './models/svm_train')
