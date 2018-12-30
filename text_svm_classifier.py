@@ -50,6 +50,16 @@ def get_corpus(folder):
             corpus.append(text_preprocess(text))
             target.append(tag)
             f.close()
+
+            # f = open(os.path.join(folder, tag, file), 'r', encoding='utf-8')
+            # for line in f:
+            #     line = text_preprocess(line)
+            #     if len(line) > 100:
+            #         # print(line)
+            #         corpus.append(line)
+            #         target.append(tag)
+            # f.close()
+
     # print(corpus)
     # print(target)
     return corpus, target
@@ -66,15 +76,15 @@ def vectorize(save_path):
 def svm_build(save_path):
     # find suitable hyper parameter
     # it should be commented when running
-    tuned_parameters = {
-        'kernel': ['linear', 'rbf'],
-        'C': [0.25, 0.5, 1, 2, 4, 8],
-        'gamma': [0.125, 0.25, 0.5, 1, 2, 4]
-    }
-    clf = GridSearchCV(svm.SVC(), tuned_parameters, cv=3)
-    vectorizer = TfidfVectorizer(analyzer='word', stop_words='english', norm='l2')
-    clf.fit(vectorizer.fit_transform(corpus), target)
-    print(clf.best_estimator_)
+    # tuned_parameters = {
+    #     'kernel': ['linear', 'rbf'],
+    #     'C': [0.25, 0.5, 1, 2, 4, 8],
+    #     'gamma': [0.125, 0.25, 0.5, 1, 2, 4]
+    # }
+    # clf = GridSearchCV(svm.SVC(), tuned_parameters, cv=3)
+    # vectorizer = TfidfVectorizer(analyzer='word', stop_words='english', norm='l2')
+    # clf.fit(vectorizer.fit_transform(corpus), target)
+    # print(clf.best_estimator_)
 
     # build & train svm model (should adjust parameter C and gamma)
     svc = svm.SVC(C=8, kernel='linear', gamma='auto').fit(x_corpus_vector, y_train)
@@ -96,8 +106,8 @@ def predict(vectorizer_model, svm_model):
 
 
 if __name__ == '__main__':
-    corpus, target = get_corpus('./LabelledNews')
-    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.01)
+    corpus, target = get_corpus('./NewLabel')
+    (x_train, x_test, y_train, y_test) = train_test_split(corpus, target, test_size=0.1)
     x_corpus_vector = vectorize('./models/tfidf_train')
     svm_build('./models/svm_train')
     predict('./models/tfidf_train', './models/svm_train')
